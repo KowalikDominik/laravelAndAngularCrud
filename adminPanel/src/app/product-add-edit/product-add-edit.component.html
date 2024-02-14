@@ -1,6 +1,7 @@
 <div mat-dialog-title>
   <h1>Add/Edit new product</h1>
 </div>
+<!-- TODO Add spinner to button and set it to disable when saving is ppending -->
 <div *ngIf="savingIsPending">Loading..</div>
 <form [formGroup]="form" class="product-form" (ngSubmit)="onFormSubmit()">
   <div mat-dialog-content>

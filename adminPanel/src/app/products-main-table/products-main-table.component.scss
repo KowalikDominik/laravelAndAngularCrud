@@ -1,0 +1,12 @@
+.table-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  .table-wrapper-inner {
+    height: 500px;
+    overflow: auto;
+  }
+}
+table {
+  width: 100%;
+}
