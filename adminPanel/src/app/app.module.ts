@@ -16,12 +16,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { ProductsMainTableComponent } from './products-main-table/products-main-table.component';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
-
+import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 @NgModule({
   declarations: [
     AppComponent,
     ProductAddEditComponent,
     ProductsMainTableComponent,
+    ConfirmDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -38,6 +40,7 @@ import { MatTableModule } from '@angular/material/table';
     HttpClientModule,
     MatTableModule,
     MatPaginatorModule,
+    MatProgressSpinnerModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

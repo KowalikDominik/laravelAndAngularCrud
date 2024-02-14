@@ -1,5 +1,5 @@
 <div mat-dialog-title>
-  <h1>Add/Edit new product</h1>
+  <h1>{{ edit ? "Edit" : "Add new" }} product</h1>
 </div>
 <!-- TODO Add spinner to button and set it to disable when saving is ppending -->
 <div *ngIf="savingIsPending">Loading..</div>
@@ -71,6 +71,26 @@
     <button mat-raised-button type="button" (click)="closeDialog()">
       Cancel
     </button>
-    <button mat-raised-button color="primary" type="submit">Save</button>
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      [disabled]="savingIsPending"
+    >
+      <div class="button-inner">
+        <div class="button-spinner">
+          <mat-spinner
+            *ngIf="savingIsPending"
+            color="accent"
+            class="button-spinner"
+            [diameter]="20"
+          >
+          </mat-spinner>
+        </div>
+        <div class="button-label">
+          {{ edit ? "Update" : "Add" }}
+        </div>
+      </div>
+    </button>
   </div>
 </form>

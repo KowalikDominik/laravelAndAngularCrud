@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Inject, OnInit, Output } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -7,8 +7,9 @@ import {
   NgForm,
 } from '@angular/forms';
 import { ProductService } from '../services/product.service';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ErrorStateMatcher } from '@angular/material/core';
+import { inject } from '@angular/core/testing';
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(
@@ -34,6 +35,7 @@ const CProductErrors = {
   description: '',
 };
 type TProduct = {
+  id?: number;
   name: string;
   image: string;
   qty: number;
@@ -57,11 +59,12 @@ export class ProductAddEditComponent implements OnInit {
   errors: TProductErrors;
   savingIsPending: boolean;
   matcher = new MyErrorStateMatcher();
-
+  edit = false;
   constructor(
     private fBuilder: FormBuilder,
     private pService: ProductService,
-    private dRef: MatDialogRef<ProductAddEditComponent>
+    private dRef: MatDialogRef<ProductAddEditComponent>,
+    @Inject(MAT_DIALOG_DATA) private data: any
   ) {
     this.form = this.fBuilder.group(CProduct);
     this.matcher = new MyErrorStateMatcher();
@@ -69,36 +72,65 @@ export class ProductAddEditComponent implements OnInit {
     this.savingIsPending = false;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.form.patchValue(this.data);
+    if (this.data) {
+      this.edit = true;
+    }
+  }
 
   closeDialog() {
     this.dRef.close();
   }
   onImageSelect({ target }: any) {
+    // TODO Implement adding image to request payload
     const filename = target.files[0].name;
     this.form.controls['image'].setValue(filename);
   }
   onFormSubmit() {
     if (this.form.valid) {
       this.savingIsPending = true;
-      this.pService.addProduct(this.form.value).subscribe({
-        next: (val: any) => {
-          this.savingIsPending = false;
-          alert('success');
-          this.closeDialog();
-          this.form.errors;
-        },
-        error: ({ error }: any) => {
-          this.savingIsPending = false;
-          this.errors = error.errors;
-          const errorsFields = Object.keys(this.errors);
-          errorsFields.map((field) => {
-            this.form.controls[field].setErrors({
-              apiError: error.errors[field],
+      if (this.edit) {
+        this.pService.editProduct(this.data.id, this.form.value).subscribe({
+          next: (val: any) => {
+            this.savingIsPending = false;
+            // TODO Add toast notification
+            alert('Item has been updated');
+            this.pService.reloadProductsList();
+            this.closeDialog();
+          },
+          error: ({ error }: any) => {
+            this.savingIsPending = false;
+            this.errors = error.errors;
+            const errorsFields = Object.keys(this.errors);
+            errorsFields.map((field) => {
+              this.form.controls[field].setErrors({
+                apiError: error.errors[field],
+              });
             });
-          });
-        },
-      });
+          },
+        });
+      } else {
+        this.pService.addProduct(this.form.value).subscribe({
+          next: (val: any) => {
+            this.savingIsPending = false;
+            // TODO Add toast notification
+            alert('Item has been added');
+            this.pService.reloadProductsList();
+            this.closeDialog();
+          },
+          error: ({ error }: any) => {
+            this.savingIsPending = false;
+            this.errors = error.errors;
+            const errorsFields = Object.keys(this.errors);
+            errorsFields.map((field) => {
+              this.form.controls[field].setErrors({
+                apiError: error.errors[field],
+              });
+            });
+          },
+        });
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Globals } from '../globals';
 
@@ -7,6 +7,8 @@ import { Globals } from '../globals';
   providedIn: 'root',
 })
 export class ProductService {
+  reloadProductsListEvent = new EventEmitter();
+
   constructor(private http: HttpClient) {}
 
   addProduct(data: any): Observable<any> {
@@ -18,7 +20,10 @@ export class ProductService {
   editProduct(id: number, data: any): Observable<any> {
     return this.http.post(`${Globals.API_ENDPOINT}/product/edit/${id}`, data);
   }
-  getProductsList() {
+  getProductsList(): Observable<any> {
     return this.http.get(`${Globals.API_ENDPOINT}/product/list`);
+  }
+  reloadProductsList() {
+    this.reloadProductsListEvent.emit();
   }
 }

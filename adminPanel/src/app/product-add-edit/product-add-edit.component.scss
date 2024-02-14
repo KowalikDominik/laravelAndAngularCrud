@@ -5,6 +5,19 @@
 }
 .product-modal-actions button {
   flex: 1;
+  .button-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .button-spinner {
+      padding-right: 5px;
+      width: 20px;
+    }
+    .button-label {
+      margin-left: -20px;
+      flex: 1;
+    }
+  }
 }
 .full-width {
   width: 100%;

@@ -3,8 +3,11 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { ProductService } from '../services/product.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ProductAddEditComponent } from '../product-add-edit/product-add-edit.component';
 
-export interface UserData {
+export interface ProductData {
   id: string;
   name: string;
   image: string | null;
@@ -18,44 +21,45 @@ export interface UserData {
   templateUrl: './products-main-table.component.html',
   styleUrls: ['./products-main-table.component.scss'],
 })
-export class ProductsMainTableComponent implements OnInit, AfterViewInit {
+export class ProductsMainTableComponent implements OnInit {
+  dialogRef: any;
   tableColumns: {
     name: string;
     title?: string;
     date?: boolean;
     action?: boolean;
-    actions?: [];
+    width?: string;
   }[] = [
     { name: 'id' },
-    { name: 'name' },
+    { name: 'name', width: '40%' },
     { name: 'image' },
     { name: 'price' },
     { name: 'updated_at' },
-    { name: 'action', action: true },
+    { name: 'action', action: true, width: '1%' },
   ];
   tableColumnNames: string[] = this.tableColumns.map((col) => col.name);
-  dataSource!: MatTableDataSource<UserData>;
+  dataSource!: MatTableDataSource<ProductData>;
   isLoading: boolean;
   errors: {};
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private pService: ProductService) {
+  constructor(private pService: ProductService, private dialog: MatDialog) {
     this.dataSource = new MatTableDataSource();
     this.isLoading = false;
     this.errors = {};
   }
-  ngAfterViewInit() {
+  getProductsList() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    this.isLoading = true;
+
     this.pService.getProductsList().subscribe({
       next: ({ data }: any) => {
-        console.log('res', data);
         this.dataSource = new MatTableDataSource(data);
         this.dataSource.sort = this.sort;
         this.dataSource.paginator = this.paginator;
         this.isLoading = false;
-        console.log('this.dataSource', this.dataSource);
       },
       error: ({ error }: any) => {
         this.isLoading = false;
@@ -73,9 +77,31 @@ export class ProductsMainTableComponent implements OnInit, AfterViewInit {
     }
   }
   ngOnInit(): void {
-    console.log('this.dataSource', this.dataSource.data);
+    this.getProductsList();
+    this.pService.reloadProductsListEvent.subscribe(() => {
+      this.getProductsList();
+    });
   }
   capitalizeFirstLetter(word: string) {
     return `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
+  }
+  removeProduct(id: number) {
+    this.dialogRef = this.dialog.open(ConfirmDialogComponent);
+    this.dialogRef.componentInstance.confirmClicked.subscribe(() => {
+      this.pService.removeProduct(id).subscribe({
+        next: () => {
+          this.dialogRef.close();
+          this.getProductsList();
+          // TODO Add toast notification
+          alert('item has been removed');
+        },
+        error: (err) => {
+          console.error('Remove item error', err);
+        },
+      });
+    });
+  }
+  editProduct(data: ProductData) {
+    this.dialogRef = this.dialog.open(ProductAddEditComponent, { data: data });
   }
 }
